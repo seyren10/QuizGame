@@ -19,15 +19,29 @@ class MainClass
         yield return new Quiz
         {
             question = "How old I am?",
-            answer = Letter.c
+            answer = Letter.c,
+            choices = new Dictionary<Letter, string>()
+            {
+                {Letter.a,"18"},
+                {Letter.b,"27"},
+                {Letter.c,"26"},
+                {Letter.d,"29"}
+            }
         };
-       
+
 
         yield return new Quiz
         {
             question = "What is my favorite food?",
-            answer = Letter.d
+            choices = new Dictionary<Letter, string>()
+            {
+                {Letter.a,"Adobo"},
+                {Letter.b,"Pakbet"},
+                {Letter.c,"Sinigang"},
+                {Letter.d,"Kare-kare"}
+            }
+            answer = Letter.d,
         };
-      
+
     }
 }
