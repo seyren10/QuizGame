@@ -28,7 +28,7 @@ public class QuizManager
       _activeQuiz = _quizList[x];
       Console.WriteLine($"Question: {_activeQuiz.question}");
 
-      foreach(var key in _activeQuiz.GetChoices())
+      foreach(var key in _activeQuiz.choices)
       {
         Console.WriteLine("{0}. {1}", key.Key, key.Value);
       }
@@ -58,7 +58,7 @@ public class QuizManager
     string input = Console.ReadLine().ToLower();
 
     //checking if the user enter a letter within a given letter choices
-    var letterList = _activeQuiz.GetChoices();
+    var letterList = _activeQuiz.choices;
     foreach(var letter in letterList)
       if(letter.Key.ToString() == input)
         return letter.Key;
