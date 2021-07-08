@@ -1,59 +1,94 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading;
+using System.Linq;
+
 public class QuizManager
 {
-  private List<Quiz> _quizList = new List<Quiz>();
+  private List<Quiz> _quizList;
   private Quiz _activeQuiz;
-  private int delay = 2000; // in millisecond
+  private Score score;
+
+  public QuizManager(Score score)
+  {
+    this.score = score;
+  }
   
   public void SetQuiz(List<Quiz> quizzes)
   {
     _quizList = quizzes;
   }
 
-  public void SetQuiz(params Quiz[] quizzes)
+  public void ShowQuiz()
   {
-    _quizList = new List<Quiz>(quizzes);
-  }
-
-  public void ShowQuiz(int start=0)
-  {
-    for(int x = start; x < _quizList.Count; x++)
+    var uniqueRandom = new UniqueRandom();
+    for(int x = 0; x < _quizList.Count; x++)
     {
       Console.Clear();
-      Console.ForegroundColor = ConsoleColor.White; // reset console ConsoleColor
+      //score Board
+      Utils.CustomConsole($"🔥 Score: {score.currentScore}  🔥",ConsoleColor.Magenta);
 
-      _activeQuiz = _quizList[x];
-      Console.WriteLine($"Question: {_activeQuiz.question}");
+      //quiz status
+      float we = x+1;
+      float wee = _quizList.Count;
+      float quizPercent = (we / wee) * 100f;
+      string quizStatus = $"🧠 Question: {x+1} of {_quizList.Count}. {quizPercent:0}%";
+      Utils.CustomConsole(quizStatus, ConsoleColor.Blue);
 
+      var rand = uniqueRandom.GetRandom(_quizList.Count);
+      _activeQuiz = _quizList[rand];
+
+      //display question
+      DisplayQuestion();
+
+      //display choices
       foreach(var key in _activeQuiz.choices)
       {
         Console.WriteLine("{0}. {1}", key.Key, key.Value);
       }
       EvaluateAnswer();
     }
+
+
+    //finishing message
+    Console.BackgroundColor = ConsoleColor.Green;
+    Console.ForegroundColor = ConsoleColor.Black;
+    Console.WriteLine($"Total : {score.correctPoints}/{_quizList.Count}");
+  }
+
+  private void DisplayQuestion()
+  {
+    string questionString = _activeQuiz.question + $"({_activeQuiz.scorePoints} points ❤️ )";
+    Utils.CustomConsole(questionString,ConsoleColor.Yellow);
+    Utils.DrawLine(_activeQuiz.question.Length,"-");
   }
 
   private void EvaluateAnswer()
   {
     if(UserInput() == _activeQuiz.answer)
     {
-      Console.ForegroundColor = ConsoleColor.Green;
-      Console.WriteLine("You got it Right!");
-      Thread.Sleep(delay);
+      Utils.CustomConsole("Correct! 😊",ConsoleColor.Green,2000);
+      score.AddPoints(_activeQuiz.scorePoints);
     }
     else
     {
-      Console.ForegroundColor = ConsoleColor.Red;
-      Console.WriteLine("You Noob");
-      Thread.Sleep(delay);
+       Utils.CustomConsole("Wrong! 😞",ConsoleColor.Red);
+       CorrectAnswer();
     }
+  }
+
+  private void CorrectAnswer()
+  {
+    var key = _activeQuiz.answer;
+    var kvp = new KeyValuePair<Letter,string>(key, _activeQuiz.choices[key]);
+
+    Console.Write("Correct Answer: ");
+    Utils.CustomConsole($"{kvp.Key.ToString().ToUpper()}. {kvp.Value}",ConsoleColor.Green,3000);
   }
 
   private Letter UserInput()
   {
+    Utils.DrawLine(_activeQuiz.question.Length,"-");
     Console.Write("Choose your answer: ");
     string input = Console.ReadLine().ToLower();
 
@@ -64,9 +99,27 @@ public class QuizManager
         return letter.Key;
     
     //the user enter an invalid letter
-    Console.WriteLine("Invalid Input!");
-    Thread.Sleep(delay);
+    Utils.CustomConsole("Invalid Letter",ConsoleColor.Red,1000);
     return UserInput();
     
   }
+
+  //generate unique number within a given integer size
+  private class UniqueRandom
+  {
+    private List<int> uniqueList = new List<int>();
+
+    public int GetRandom(int size)
+    {
+      Random rand = new Random();
+      int value = rand.Next(size);
+      if(!uniqueList.Contains(value))
+      {
+        uniqueList.Add(value);
+        return value;
+      }
+      return GetRandom(size);
+    }
+  }
 }
+
